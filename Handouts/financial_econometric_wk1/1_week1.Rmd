@@ -1,0 +1,283 @@
+---
+title: "Module 1"
+author: "Yu Zhang"
+date: "2021/11/15"
+output: html_document
+---
+
+1.1 R can be used as a calculator
+
+```{r}
+1+1
+5*(4-1)^2
+sqrt( log(10) )
+```
+
+1.2 Installing packages in R
+
+```{r}
+# install.packages('ggplot2')
+```
+
+```{r}
+library('ggplot2')
+```
+
+```{r}
+getwd()
+```
+```{r setup, include=FALSE, echo=FALSE}
+require("knitr")
+# basedirectory = 'C://Users//yzhan//Dropbox//Teaching教学//金融硕金融计量//'
+basedirectory = 'D://Dropbox//Teaching教学//金融硕金融计量//'
+subdirectory = 'Rfiles//'
+workdirectory = paste(basedirectory, subdirectory, sep = '')
+opts_knit$set(root.dir = workdirectory)
+```
+
+```{r}
+getwd()
+```
+
+1.3 Input your first column into R
+
+```{r}
+ (a <- c(1,2,3,4,5,6))
+```
+
+```{r}
+(year <- c(2016,2017,2018,2019,2020))
+(stkprc1 <- c(10,20,40,80,160))
+(stkprc2 <- c(40,30,20,10,5))
+(portfolio <- 1*stkprc1 + 1*stkprc2)
+(price_difference <- stkprc1 - stkprc2)
+length(year)
+sort(stkprc2)
+rep(1,5)
+seq(4,12,2)
+(cities <- c("New York","Los Angeles","Chicago"))
+(cities == "New York")
+```
+
+Factor variables
+
+```{r}
+x <- c(3,2,2,3,1,2,3,2,1,2)
+(xf <- factor(x, labels=c("C","B","A")))
+```
+```{r}
+credit_rating <- c("AAA", "AA", "A", "BBB", "AA", "BBB", "A")
+(credit_factor <- factor(c("AAA", "AA", "A", "BBB", "AA", "BBB", "A")))
+(credit_factor_ordered <- factor(credit_rating, ordered = TRUE, 
+                                levels = rev(c("AAA", "AA", "A", "BBB")))) # rev() is for reverse
+(credit_factor_ordered2 <- ordered(credit_factor, levels = rev(c("AAA", "AA", "A", "BBB")))) # rev() is for reverse
+```
+
+Vector naming
+
+```{r}
+# Create a vector "avgs":
+(avgs <- c(.366, .358, .356, .349, .346))
+```
+
+```{r}
+# Create a string vector of names:
+(players <- c("丁一","钱二","张三","李四","王五"))
+```
+
+```{r}
+# Assign names to vector and display vector:
+names(avgs) <- players
+avgs
+names(avgs)
+```
+```{r}
+# Indices by number:
+avgs[2]
+avgs[1:4]
+avgs[-(1:3)]
+avgs[4:length(avgs)]
+```
+```{r}
+# Indices by name:
+avgs["王五"]
+```
+```{r}
+players=="王五"
+avgs[players=="王五"]
+stkprc1[year>=2018]
+stkprc1_named <- stkprc1
+names(stkprc1_named) <- year
+stkprc1_named[year>=2018]
+```
+
+```{r}
+# Logical indices:
+avgs[ avgs>=0.35 ]
+```
+
+R vector to R matrix
+
+```{r}
+(v <- c(2,-4,-1,5,7,0))
+( A <- matrix(v,nrow=2) )
+( matrix(v,ncol=2) )
+( matrix(v,ncol=4) )
+(A)
+(A[1,])
+(A[,1])
+```
+
+```{r}
+(B <- cbind(year, stkprc1, stkprc2))
+```
+```{r}
+B[1,]
+B[year>=2017,]
+B[,colnames(B)=='year']
+B[,'year']
+B[,colnames(B)==c('year','stkprc1')]
+B[,c('year','stkprc1')]
+```
+
+R matrix to R dataframe
+
+```{r}
+(C <- as.data.frame(B))
+```
+
+```{r}
+C[1,]
+C[year==2017,]
+C[,colnames(C)=='year']
+C[,'year']
+C$year
+C[year>=2018,]
+C[,colnames(C)==c('year','stkprc1')]
+C[,c('year','stkprc1')]
+C[year>=2019,colnames(C)==c('year','stkprc1')]
+C[year>=2019,names(C)==c('year','stkprc1')]
+C[year>=2019,!(names(C) == c('stkprc1'))]
+C[year>=2019,!(names(C) %in% c('stkprc1'))]
+```
+
+```{r}
+getwd()
+save(C, file = "1_stkprc.RData")
+load('1_stkprc.RData')
+```
+
+```{r}
+write.table(C, file = "1_stkprc.csv", sep=",", row.names = FALSE)
+```
+
+```{r}
+(D <- read.table("1_stkprc.csv", sep=",", header = TRUE))
+```
+```{r}
+D
+```
+
+在R语言中调用Akshare的数据接口
+
+首先官网安装python并在Powershell（Terminal）中执行pip install akshare
+
+然后在R语言中安装reticulate
+
+```{r}
+if(!require(reticulate)){
+    install.packages("reticulate")
+}
+py_config()
+```
+
+```{r}
+library(reticulate)  # 导入 reticulate 包
+ak <- import("akshare")  # 类似于 import akshare as ak
+stock_snapshot <- ak$stock_zh_a_spot_em()  # 类似于 ak.stock_zh_a_spot_em()
+print(stock_snapshot)  # 查看数据
+```
+```{r}
+stock_history_qfq <- ak$stock_zh_a_hist(symbol='600519',period='daily',adjust='qfq')  # 前复权（当前价格不变）
+stock_history_hfq <- ak$stock_zh_a_hist(symbol='600519',period='daily',adjust='hfq')  # 后复权（历史价格不变）
+print(stock_history_qfq)
+print(stock_history_qfq[order(stock_history_qfq$日期, decreasing = TRUE),])
+print(tail(stock_history_qfq))
+print(stock_history_hfq)
+print(stock_history_hfq[order(stock_history_hfq$日期, decreasing = TRUE),c('日期','收盘')])
+print(tail(stock_history_hfq))
+```
+```{r}
+stock_history_hfq$名称 <- '贵州茅台'
+stock_history_hfq <- stock_history_hfq[,c(ncol(stock_history_hfq),1:(ncol(stock_history_hfq)-1))]
+stock_history_hfq$代码 <- '600519'
+stock_history_hfq <- stock_history_hfq[,c(ncol(stock_history_hfq),1:(ncol(stock_history_hfq)-1))]
+print(head(stock_history_hfq))
+```
+
+计算回报率
+
+```{r}
+stock_history_hfq$log_close_price <- log(stock_history_hfq$收盘)
+stock_history_hfq$ret_i <- c(NA,diff(stock_history_hfq$log_close_price))
+stock_history_hfq <- stock_history_hfq[,!(names(stock_history_hfq) %in% 'log_close_price')]
+print(tail(stock_history_hfq))
+stock_return <- stock_history_hfq[,c('名称','代码','日期','ret_i')]
+print(stock_return)
+```
+Use Stargazer to summarize the stock return dataset
+
+```{r}
+if (!require('stargazer')) {
+  install.packages('stargazer')
+}
+library('stargazer')
+stargazer(stock_history_hfq, type="text")
+stargazer(stock_return, type="text")
+```
+单数日和双数日回报是否相同？
+
+```{r}
+单数日 = strtoi(substring(stock_return$日期,10,10)) %% 2
+(stock_return <- cbind(stock_return, 单数日))
+```
+
+```{r}
+t.test(stock_return$ret_i ~ stock_return$单数日,paired=FALSE,var.equal=FALSE,alternative='two.sided') 
+ # we use unpaired t test (paired t test is for same individual over time)
+```
+
+Plot the histogram and kernel density of ret_i
+
+```{r}
+library('ggplot2')
+ggplot(stock_return, aes(x=ret_i))+geom_histogram(aes(y=..density..))+geom_density()
+```
+
+Plot the age distribution for males and females
+
+```{r}
+ggplot(stock_return, aes(x=as.factor(单数日), y=ret_i, fill=as.factor(单数日))) + geom_boxplot()
+```
+
+```{r}
+library('dplyr')
+(D <- C[,c('year','stkprc1')])
+(E <- C[,c('year','stkprc2')])
+(F <- left_join(D,E,by='year'))
+```
+```{r}
+D
+```
+
+```{r}
+E
+```
+
+```{r}
+F
+```
+
+```{r}
+date <- as.Date(stock_return$日期, format = "%Y-%m-%d")
+```

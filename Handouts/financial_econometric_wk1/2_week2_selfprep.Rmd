@@ -1,0 +1,246 @@
+---
+title: "Remainder of URfIE Chapter 1"
+author: "FinEmt 2021"
+date: "2021/11/21"
+output: html_document
+---
+
+## 1.4 Base Graphics
+
+In R, a function plot can be generated using the command **curve( function(x), xmin, xmax )**
+
+```{r}
+curve( x^2, -2, 2)
+```
+```{r}
+curve( dnorm(x, mean=0.2, sd=0.4), -1, 1.5)
+```
+
+Base R plotting can also handle (1) overlays of multiple plots and (2) adding graph legends
+
+```{r}
+curve( dnorm(x,0,1), -10, 10, lwd=1, lty=1)
+curve( dnorm(x,0,2),add=TRUE, lwd=2, lty=2)
+curve( dnorm(x,0,3),add=TRUE, lwd=3, lty=3)
+# Add the legend
+# legend("topright",c("sigma=1","sigma=2","sigma=3"), lwd=1:3, lty=1:3)
+# Add the legend with greek sigma
+legend("topleft",expression(sigma==1,sigma==2,sigma==3),lwd=1:3,lty=1:3)
+# Add the text with the formula, centered at x=6 and y=0.3
+text(6,.3,
+expression(f(x)==frac(1,sqrt(2*pi)*sigma)*e^{-frac(x^2,2*sigma^2)}))
+```
+
+## 1.5 "Tidyverse": `ggplot2` + `dplyr`
+
+Tidyverse is a set of packages (e.g. `ggplot2` and `dplyr`) that makes the R workflow "pretty". 
+
+### 1.5.1 `ggplot2`
+
+First, let us use the `mpg` data set that comes with the package `ggplot2` to try out the command `ggplot`.
+
+```{r echo=FALSE}
+library(ggplot2)
+```
+```{r}
+head(mpg)
+```
+A simple scatter plot (`geom_point`)
+```{r}
+ggplot() + geom_point( data=mpg, mapping=aes(x=displ, y=hwy) )
+# ggplot(data=mpg, aes(x=displ, y=hwy)) + geom_point()
+```
+A scatter plot with regression line or smoothed line (`geom_point` + `geom_smooth`)
+```{r}
+# ggplot() + geom_point( data=mpg, mapping=aes(x=displ, y=hwy) ) + geom_smooth(data=mpg, mapping=aes(x=displ, y=hwy) )
+ggplot(data=mpg, aes(x=displ, y=hwy)) + geom_point() + geom_smooth()
+```
+```{r}
+# ggplot() + geom_point( data=mpg, mapping=aes(x=displ, y=hwy) ) + geom_smooth(data=mpg, mapping=aes(x=displ, y=hwy), method='lm', formula = y~x )
+ggplot(data=mpg, aes(x=displ, y=hwy)) + geom_point() + geom_smooth(method='lm')
+```
+
+You can use `labs()` to modify the axis labels. 
+
+```{r}
+# ggplot() + geom_point( data=mpg, mapping=aes(x=displ, y=hwy) ) + geom_smooth(data=mpg, mapping=aes(x=displ, y=hwy), method='lm', formula = y~x )
+ggplot(data=mpg, aes(x=displ, y=hwy)) + geom_point() + geom_smooth(method='lm') + labs(x="Engine displacement (1000cc)",y="Hwy mileage per gallon")
+```
+
+You can group the data using `color` or shape:
+
+```{r}
+ggplot(mpg, aes(x=displ, y=hwy)) + geom_point(aes(color=class))
+```
+```{r warning = FALSE, message=FALSE}
+ggplot(mpg, aes(x=displ, y=hwy)) + geom_point(aes(shape=class))
+```
+
+```{r warning = FALSE, message=FALSE}
+ggplot(mpg, aes(x=displ, y=hwy, color=class, shape=class)) + geom_point() + geom_smooth(se=FALSE) 
+```
+
+### 1.5.2 `dplyr`
+
+Let us use the life expectancy (`SP.DYN.LE00.FE.IN`) data from the World Bank's World Development Indices to illustrate the `dplyr` package
+
+```{r echo=FALSE}
+library(WDI)
+```
+
+```{r eval=FALSE}
+wdi_raw <- WDI(indicator=c("SP.DYN.LE00.FE.IN","SP.DYN.LE00.MA.IN"), start = 1960, end = 2014)
+head(wdi_raw)
+save(wdi_raw, file="wdi_raw.Rdata")
+```
+
+
+```{r}
+load(file = "wdi_raw.Rdata")
+```
+
+```{r echo=FALSE}
+library(dplyr)
+```
+
+```{r}
+# filter: only China data
+ourdata <- filter(wdi_raw, iso2c=="CN")
+# rename lifeexpectancy variables
+ourdata <- rename(ourdata, LE_fem=SP.DYN.LE00.FE.IN)
+ourdata <- rename(ourdata, LE_male=SP.DYN.LE00.MA.IN)
+# select relevant variables # help(select, package='dplyr')
+ourdata <- select(ourdata, year, LE_fem, LE_male)
+# order by year (increasing)
+ourdata <- arrange(ourdata, year)
+
+# Head and tail of data
+head(ourdata)
+tail(ourdata)
+
+# Graph
+library(ggplot2)
+ggplot(ourdata) + 
+  geom_line(aes(x=year,y=LE_fem,color='Female')) +
+  geom_line(aes(x=year,y=LE_male,color='Male')) + 
+  theme_light() + 
+  labs(title="Life expectancy of females and males in China",
+       subtitle="World Bank: World Development Indicators",
+       x = "Year",
+       y = "Life expectancy [years]",
+       color = "Gender"
+       ) 
+```
+`dplyr` also provides an equivalent way called the "pipe" (`%>%`)
+
+```{r}
+remove(ourdata)
+ourdata <- wdi_raw %>% 
+  # filter: only China data
+    filter(iso2c=="CN") %>%
+  # rename lifeexpectancy variables
+    rename(LE_fem=SP.DYN.LE00.FE.IN) %>%
+    rename(LE_male=SP.DYN.LE00.MA.IN) %>%
+  # select relevant variables # help(select, package='dplyr')
+    select(year, LE_fem, LE_male) %>%
+  # order by year (increasing)
+    arrange(year)
+
+# Head and tail of data
+head(ourdata)
+tail(ourdata)
+
+# Graph
+library(ggplot2)
+ggplot(ourdata) + 
+  geom_line(aes(x=year,y=LE_fem,color='Female')) +
+  geom_line(aes(x=year,y=LE_male,color='Male')) + 
+  theme_light() + 
+  labs(title="Life expectancy of females and males in China",
+       subtitle="World Bank: World Development Indicators",
+       x = "Year",
+       y = "Life expectancy [years]",
+       color = "Gender"
+       ) 
+```
+
+Frequently, we merge two data sets on one or more common variable(s). This is called **merge** in Stata and **join** in R and Python. Think about how you would compute the B/M ratio for A-share stocks. 
+
+```{r eval=FALSE}
+le_data <- wdi_raw %>% rename(LE_fem=SP.DYN.LE00.FE.IN) %>% rename(LE_male=SP.DYN.LE00.MA.IN)
+ctryinfo <- as.data.frame(WDI_data$country, stringsAsFactors = FALSE) %>% select(country, income)
+save(le_data, ctryinfo, file='wdi_join.Rdata')
+```
+
+```{r}
+load('wdi_join.Rdata')
+tail(le_data)
+tail(ctryinfo)
+```
+Join data set `le_data` and data set `ctryinfo` on variable `country`
+
+```{r}
+alldata <- left_join(le_data, ctryinfo, by = 'country')
+tail(alldata)
+```
+
+Generate a new data set of life expectancies of income groups over time. This is called `collapse` in Stata and `summarize` in R. 
+
+```{r}
+# Summarize by country and year
+avgdata <- alldata %>%     
+  filter(income != "Aggregates") %>%           # remove rows for aggregates
+  filter(income != "Not classified") %>%       # remove unclassified ctries
+  filter(!is.na(income)) %>%                     # remove missing ctries
+  group_by(income, year) %>%                   # group by income classification
+  summarize(LE_fem_avg  = mean(LE_fem , na.rm=TRUE),
+            LE_male_avg = mean(LE_male, na.rm=TRUE)) %>% # average by group 
+  ungroup()                                    # remove grouping
+tail(avgdata)
+```
+```{r}
+ggplot(avgdata, aes(year, LE_fem_avg, color=income)) +
+  scale_color_grey() +                              # gray scale
+  geom_line() 
+```
+The income groups are not ordered correctly in the above graph. To perfect it, we need to understand `factor` in R.
+
+```{r}
+unique(alldata$income)
+unique(avgdata$income)
+```
+
+```{r echo=FALSE}
+# install.packages('epiDisplay')
+library(epiDisplay, include.only='tab1')
+```
+
+```{r}
+tab1(alldata$income, graph=FALSE)
+tab1(avgdata$income, graph=FALSE)
+```
+
+R can `factor` the income groups into a more meaningful ordering. 
+
+```{r}
+(不考)
+# Order the levels meaningfully
+avgdata$income_factorized <- factor( avgdata$income, 
+                          levels = c("High income",
+                                     "Upper middle income",
+                                     "Lower middle income",
+                                     "Low income") )
+# Plot
+ggplot(avgdata, aes(year, LE_fem_avg, color=income_factorized)) +
+  geom_line(size=1) +                               # thicker lines 
+  scale_color_grey() +                              # gray scale
+  scale_x_continuous(breaks=seq(1960,2015,10)) +    # adjust x axis breaks  
+  theme_light() +                                   # light theme (white background,...)
+  labs(title="Life expectancy of women",            
+       subtitle="Average by country classification",
+       x="Year", y="Life expectancy [Years]",
+       color="Income level",
+       caption="Source: World Bank, WDI")
+```
+
+dplyr relocate
