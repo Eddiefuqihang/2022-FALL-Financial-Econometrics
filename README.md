@@ -1,4 +1,8 @@
-<h1 align='center'>金融硕英文金融计量<br>Financial Econometrics<h>
+<h1 align='center'>
+    金融硕英文金融计量
+    <br>
+    Financial Econometrics
+</h1>
 
 
 课程计划
