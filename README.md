@@ -1,6 +1,4 @@
-金融硕英文金融计量
-
-Financial Econometrics
+<h1 align='center'>金融硕英文金融计量<br>Financial Econometrics<h>
 
 课程计划
 
@@ -10,9 +8,9 @@ Course README
 
 The text book is Introductory Econometrics by Wooldridge (6ed).
 
-参考书是Using R for Introductory Econometrics (2ed, http://www.urfie.net/)和The Econometrics of Financial Markets (Campbell, Lo and MacKinlay, 1997)。
+参考书是[Using R for Introductory Econometrics (2ed)](http://www.urfie.net/) 和The Econometrics of Financial Markets (Campbell, Lo and MacKinlay, 1997)。
 
-References are Using R for Introductory Econometrics (2ed, http://www.urfie.net/) and the Econometrics of Financial Markets (Campbell, Lo and MacKinlay, 1997)
+References are [Using R for Introductory Econometrics (2ed)](http://www.urfie.net/) and the Econometrics of Financial Markets (Campbell, Lo and MacKinlay, 1997)
 
 课程不假设学生有计量和R的基础。
 
@@ -33,10 +31,10 @@ In Week 1 we will cover Chapter 1 of the textbook and the R language.
 所需软件是R和RStudio，在以下两个连接中：
 You can download the necessary software (R and RStudio) in the links below:
 
-https://www.rstudio.com/ (RStudio）
+[RStudio](https://www.rstudio.com/)
 
-https://mirrors.tuna.tsinghua.edu.cn/CRAN/ （R）
+[R](https://mirrors.tuna.tsinghua.edu.cn/CRAN/)
 
 另外到时需要请同学们确认有CSMAR的数据权限。第一节课会要求同学们在CSMAR上下载一个自选数据并尝试使用RMarkdown进行数据操作
 
-Please prepare a CSMAR account (http://www.gtarsc.com). Help on CSMAR can be obtained at the information center on the 3rd floor of Guanghua Building No.1.
+Please prepare a [CSMAR account](http://www.gtarsc.com). Help on CSMAR can be obtained at the information center on the 3rd floor of Guanghua Building No.1.
